@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="orman-20120316">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/SQLite/lib/orman-20120316.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/FoundationCommon/FoundationCommon.iml" filepath="$PROJECT_DIR$/FoundationCommon/FoundationCommon.iml" />
+      <module fileurl="file://$PROJECT_DIR$/JFXCommon/JFXCommon.iml" filepath="$PROJECT_DIR$/JFXCommon/JFXCommon.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SQLite/SQLite.iml" filepath="$PROJECT_DIR$/SQLite/SQLite.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SoMarker.iml" filepath="$PROJECT_DIR$/SoMarker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SoMarkerGUI/SoMarkerGUI.iml" filepath="$PROJECT_DIR$/SoMarkerGUI/SoMarkerGUI.iml" />
+    </modules>
+  </component>
+</project>

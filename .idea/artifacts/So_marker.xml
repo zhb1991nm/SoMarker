@@ -1,0 +1,30 @@
+<component name="ArtifactManager">
+  <artifact type="javafx" name="So marker">
+    <output-path>$PROJECT_DIR$/out/artifacts/So_marker</output-path>
+    <properties id="javafx-properties">
+      <options>
+        <option name="appClass" value="org.zpd.dai.Main" />
+        <option name="description" value="" />
+        <option name="height" value="600" />
+        <option name="htmlParamFile" value="" />
+        <option name="nativeBundle" value="dmg" />
+        <option name="paramFile" value="" />
+        <option name="title" value="So marker" />
+        <option name="vendor" value="" />
+        <option name="width" value="1200" />
+      </options>
+    </properties>
+    <root id="root">
+      <element id="archive" name="SoMarker.jar">
+        <element id="module-output" name="SoMarker" />
+        <element id="module-output" name="FoundationCommon" />
+        <element id="module-output" name="JFXCommon" />
+        <element id="module-output" name="SoMarkerGUI" />
+        <element id="module-output" name="SQLite" />
+      </element>
+      <element id="library" level="project" name="controlsfx-8.40.10" />
+      <element id="library" level="project" name="orman-20120316" />
+      <element id="library" level="project" name="sqlite4java-392" />
+    </root>
+  </artifact>
+</component>
