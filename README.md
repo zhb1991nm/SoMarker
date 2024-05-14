@@ -1,3 +1,5 @@
+![logo](doc/logo.jpg)
+
 # SoMarker GUI Tool
 
 ## Screenshots
