@@ -1,7 +1,7 @@
 package org.zpd.somarker;
 
 import javafx.application.Application;
-import javafx.beans.*;
+import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
@@ -16,14 +16,15 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import org.zpd.somarker.db.ORMDatabaseHelper;
-import org.zpd.somarker.functions.reference.Reference;
-import org.zpd.somarker.functions.marker.FluorescentMarkerFinder;
-import org.zpd.somarker.functions.marker.PhenotypicMarkerFinder;
 import org.zpd.jfxcommon.JFXFunction;
 import org.zpd.jfxcommon.model.EmptyFunction;
 import org.zpd.jfxcommon.model.FuctionTree;
 import org.zpd.jfxcommon.model.Project;
+import org.zpd.somarker.db.ORMDatabaseHelper;
+import org.zpd.somarker.functions.data.DataTool;
+import org.zpd.somarker.functions.marker.FluorescentMarkerFinder;
+import org.zpd.somarker.functions.marker.PhenotypicMarkerFinder;
+import org.zpd.somarker.functions.reference.Reference;
 
 import java.util.*;
 
@@ -40,11 +41,15 @@ public class Main extends Application{
     private TreeItem<JFXFunction> root;
     private StackPane contentPane;
 
+    private static final List<String> sectionOrder = Arrays.asList("Marker", "Data", "Reference");
+
     public static void main(String[] args) {
         launch(args);
     }
 
     public void start(Stage primaryStage) throws Exception {
+        String javafxVersion = System.getProperty("javafx.version");
+        System.out.println(javafxVersion);
         ORMDatabaseHelper.sharedInstance().startSession();
 
         this.projectsMap = this.discoverFunctions();
@@ -167,15 +172,19 @@ public class Main extends Application{
 
     protected Map<String,Project> discoverFunctions(){
         Map<String,Project> ret = new HashMap<>();
-        Project project = new Project("Marker","org.zpd.dai.functions.marker");
-        project.addFunction("org.zpd.dai.functions.marker",new PhenotypicMarkerFinder());
-        project.addFunction("org.zpd.dai.functions.marker",new FluorescentMarkerFinder());
+        Project project = new Project("Marker","org.zpd.somarker.functions.marker");
+        project.addFunction("org.zpd.somarker.functions.marker",new PhenotypicMarkerFinder());
+        project.addFunction("org.zpd.somarker.functions.marker",new FluorescentMarkerFinder());
 
-        Project project1 = new Project("Reference","org.zpd.dai.functions.reference");
-        project1.addFunction("org.zpd.dai.functions.reference",new Reference());
+        Project project1 = new Project("Data","org.zpd.somarker.functions.data");
+        project1.addFunction("org.zpd.somarker.functions.data",new DataTool());
+
+        Project project2 = new Project("Reference","org.zpd.somarker.functions.reference");
+        project2.addFunction("org.zpd.somarker.functions.reference",new Reference());
 
         ret.put("Marker",project);
-        ret.put("Reference",project1);
+        ret.put("Data", project1);
+        ret.put("Reference",project2);
         return ret;
     }
 
@@ -204,12 +213,17 @@ public class Main extends Application{
 
             String o1Name = o1.getValue().getFunctionName();
             String o2Name = o2.getValue().getFunctionName();
-            if (o1Name.equals("Reference")){
-                return 1;
-            }else if (o2Name.equals("Reference")){
-                return -1;
-            }else {
+
+            int o1Order = sectionOrder.indexOf(o1Name);
+            int o2Order = sectionOrder.indexOf(o2Name);
+            if (o1Order == o2Order){
                 return (o1.getValue()).getFunctionName().compareTo((o2.getValue()).getFunctionName());
+            }else {
+                if (o1Order > o2Order){
+                    return 1;
+                }else{
+                    return -1;
+                }
             }
         });
 

@@ -29,9 +29,11 @@
         <element id="module-output" name="SoMarkerGUI" />
         <element id="module-output" name="SQLite" />
       </element>
-      <element id="library" level="project" name="controlsfx-8.40.10" />
       <element id="library" level="project" name="orman-20120316" />
       <element id="library" level="project" name="sqlite4java-392" />
+      <element id="library" level="project" name="apache.commons.csv" />
+      <element id="library" level="project" name="controlsfx-8.40.10" />
+      <element id="library" level="project" name="apache.poi.ooxml" />
     </root>
   </artifact>
 </component>

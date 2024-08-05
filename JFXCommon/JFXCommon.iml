@@ -7,7 +7,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" exported="" name="controlsfx-8.40.10" level="project" />
     <orderEntry type="module" module-name="FoundationCommon" exported="" />
+    <orderEntry type="library" exported="" name="controlsfx-8.40.10" level="project" />
   </component>
 </module>

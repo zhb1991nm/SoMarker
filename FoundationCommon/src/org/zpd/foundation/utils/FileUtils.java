@@ -24,17 +24,22 @@ public class FileUtils {
 
     }
 
-    private String APP_PATH = "MichaelDai/";
+    public static final String csvNullString = "null";
 
-    private String DB_PATH = "EZX.db";
+    private final String APP_PATH = "SoMarker" + File.separator;
+
+    private final String DB_PATH = "SoMarker.db";
+
+    private final String IMAGE_PATH = "images" + File.separator;
 
     public String getROOT_PATH() {
-        if (SystemUtils.currentSystem() == SystemUtils.MacOS) {
+        if (SystemUtils.currentSystem().equals(SystemUtils.MacOS)) {
             return System.getProperty("user.home") + "/library/Application Support/";
-        } else if (SystemUtils.currentSystem() == SystemUtils.Windows) {
-            return System.getProperty("java.io.tmpdir") + "/";
+        } else if (SystemUtils.currentSystem().equals(SystemUtils.Windows)) {
+//            return System.getProperty("java.io.tmpdir") + "/";
+            return System.getenv("APPDATA") + File.separator;
         } else {
-            return System.getProperty("user.home") + "/";
+            return System.getProperty("user.home") + File.separator;
         }
     }
 
@@ -44,6 +49,10 @@ public class FileUtils {
 
     public String getDB_PATH() {
         return getAPP_PATH() + DB_PATH;
+    }
+
+    public String getIMAGE_PATH() {
+        return getAPP_PATH() + IMAGE_PATH;
     }
 
     private void init() {
@@ -134,6 +143,29 @@ public class FileUtils {
                     in.close();
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    public void clearAppDirectory(){
+        clearDirectory(new File(this.getAPP_PATH()));
+    }
+
+    public static void clearDirectory(File directory) {
+        if (directory.isDirectory()) {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        // 如果是子目录，递归调用clearDirectory
+                        clearDirectory(file);
+                    } else {
+                        // 删除文件
+                        if (!file.delete()) {
+                            System.out.println("无法删除文件: " + file.getAbsolutePath());
+                        }
+                    }
+                }
             }
         }
     }

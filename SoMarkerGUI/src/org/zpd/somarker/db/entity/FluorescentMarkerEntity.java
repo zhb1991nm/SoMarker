@@ -9,7 +9,7 @@ import org.orman.mapper.annotation.Entity;
  */
 
 @Entity(table = "FluorescentMarker")
-public class FluorescentMarkerEntity extends Model<FluorescentMarkerEntity>{
+public class FluorescentMarkerEntity extends Model<FluorescentMarkerEntity> {
 
     @Column(name = "Chromosome")
     private String chromosome;
@@ -17,14 +17,8 @@ public class FluorescentMarkerEntity extends Model<FluorescentMarkerEntity>{
     @Column(name = "GeneticPosition")
     private double geneticPosition;
 
-    @Column(name = "Promoter")
-    private String promoter;
-
     @Column(name = "Fluorophore")
     private String fluorophore;
-
-    @Column(name = "Allele")
-    private String allele;
 
     @Column(name = "StrainName")
     private String strainName;
@@ -37,6 +31,9 @@ public class FluorescentMarkerEntity extends Model<FluorescentMarkerEntity>{
 
     @Column(name = "Image")
     private String image;
+
+    @Column(name = "FluorescentMarker")
+    private String fluorescentMarker;
 
     public String getChromosome() {
         return chromosome;
@@ -54,28 +51,12 @@ public class FluorescentMarkerEntity extends Model<FluorescentMarkerEntity>{
         this.geneticPosition = geneticPosition;
     }
 
-    public String getPromoter() {
-        return promoter;
-    }
-
-    public void setPromoter(String promoter) {
-        this.promoter = promoter;
-    }
-
     public String getFluorophore() {
         return fluorophore;
     }
 
     public void setFluorophore(String fluorophore) {
         this.fluorophore = fluorophore;
-    }
-
-    public String getAllele() {
-        return allele;
-    }
-
-    public void setAllele(String allele) {
-        this.allele = allele;
     }
 
     public String getStrainName() {
@@ -108,6 +89,14 @@ public class FluorescentMarkerEntity extends Model<FluorescentMarkerEntity>{
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public String getFluorescentMarker() {
+        return fluorescentMarker;
+    }
+
+    public void setFluorescentMarker(String fluoroscentMarker) {
+        this.fluorescentMarker = fluoroscentMarker;
     }
 
 }

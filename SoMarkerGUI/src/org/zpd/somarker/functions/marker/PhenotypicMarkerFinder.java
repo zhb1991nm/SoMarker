@@ -16,21 +16,22 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
+import org.zpd.foundation.Tool;
+import org.zpd.jfxcommon.control.MultipleTipLabel;
+import org.zpd.jfxcommon.model.JFXFunctionBase;
 import org.zpd.somarker.db.entity.AbbreviationEntity;
 import org.zpd.somarker.db.entity.PhenotypicMarkerEntity;
 import org.zpd.somarker.db.entity.WormGeneEntity;
 import org.zpd.somarker.functions.marker.service.AbbreviationService;
 import org.zpd.somarker.functions.marker.service.PhenotypicMarkerFinderService;
 import org.zpd.somarker.functions.marker.service.WormGeneService;
-import org.zpd.foundation.Tool;
-import org.zpd.jfxcommon.control.MultipleTipLabel;
-import org.zpd.jfxcommon.model.JFXFunctionBase;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -38,16 +39,17 @@ import java.util.*;
 /**
  * Created by zhb on 16/10/2.
  */
-public class PhenotypicMarkerFinder extends JFXFunctionBase{
+public class PhenotypicMarkerFinder extends JFXFunctionBase {
 
     private ComboBox<String> chromosomeComboBox;
     private TextField geneticPositionTextField;
     private TextField geneNameTextField;
     private TextField rfTextField;
-    private Button searchButton,emptyButton;
+    private Button searchButton, emptyButton;
+    private TableView tableView;
     private PopOver popOver;
-    private Label label_col_ES,label_col_ME,label_col_NA;
-    private Tooltip tip_col_ES,tip_col_ME,tip_col_NA;
+    private Label label_col_ES, label_col_ME, label_col_NA;
+    private Tooltip tip_col_ES, tip_col_ME, tip_col_NA;
 
     private Node contentNode;
 
@@ -59,7 +61,7 @@ public class PhenotypicMarkerFinder extends JFXFunctionBase{
 
     private ObservableList<PhenotypicMarkerEntity> data = FXCollections.observableArrayList();
 
-    public PhenotypicMarkerFinder(){
+    public PhenotypicMarkerFinder() {
         wormGenes = WormGeneService.allWormGenes;
     }
 
@@ -71,25 +73,25 @@ public class PhenotypicMarkerFinder extends JFXFunctionBase{
 
     @Override
     public Node getPanel(Stage stage) {
-        if (contentNode == null){
+        if (contentNode == null) {
             VBox searchBar = new VBox();
             searchBar.setPrefHeight(80);
             searchBar.setSpacing(0);
             geneNameTextField = new TextField();
             geneNameTextField.setMaxWidth(100);
-            chromosomeComboBox = new ComboBox<>(FXCollections.observableArrayList("I","II","III","IV","V","X"));
+            chromosomeComboBox = new ComboBox<>(FXCollections.observableArrayList("I", "II", "III", "IV", "V", "X"));
             geneticPositionTextField = new TextField();
             geneticPositionTextField.setMaxWidth(80);
             geneticPositionTextField.setTextFormatter(new TextFormatter<String>((TextFormatter.Change change) -> {
                 String newText = change.getControlNewText();
-                if (newText.equals("") || newText.equals("-")){
+                if (newText.equals("") || newText.equals("-")) {
                     return change;
                 }
                 try {
                     Float.parseFloat(newText.toString());
-                    return change ;
+                    return change;
                 } catch (Exception e) {
-                    return null ;
+                    return null;
                 }
             }));
             Label geneNameLabel = new Label("Gene");
@@ -100,6 +102,7 @@ public class PhenotypicMarkerFinder extends JFXFunctionBase{
             searchButton.setDefaultButton(true);
             emptyButton = new Button("empty");
             emptyButton.setOnAction((e) -> {
+                selectedWormGene = null;
                 geneNameTextField.setText("");
                 chromosomeComboBox.setDisable(false);
 //            chromosomeComboBox.getCheckModel().clearChecks();
@@ -110,18 +113,19 @@ public class PhenotypicMarkerFinder extends JFXFunctionBase{
                 data.clear();
             });
             Label rfLabel = new Label("Recombination frequency:");
+            Label rfUnitLabel = new Label("%");
             rfTextField = new TextField();
             rfTextField.setDisable(true);
             rfTextField.setMaxWidth(80);
-            HBox line1 = new HBox(geneNameLabel,geneNameTextField,chromosomeLabel, chromosomeComboBox,geneticPosition,geneticPositionTextField,searchButton,emptyButton);
-            HBox line2 = new HBox(rfLabel,rfTextField);
+            HBox line1 = new HBox(geneNameLabel, geneNameTextField, chromosomeLabel, chromosomeComboBox, geneticPosition, geneticPositionTextField, searchButton, emptyButton);
+            HBox line2 = new HBox(rfLabel, rfTextField, rfUnitLabel);
             line1.setPrefHeight(40);
             line1.setSpacing(10);
             line1.setAlignment(Pos.CENTER_LEFT);
             line2.setPrefHeight(40);
             line2.setSpacing(10);
             line2.setAlignment(Pos.CENTER_LEFT);
-            searchBar.getChildren().addAll(line1,line2);
+            searchBar.getChildren().addAll(line1, line2);
             geneNameTextField.textProperty().addListener(new ChangeListener<String>() {
                 @Override
                 public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
@@ -135,6 +139,7 @@ public class PhenotypicMarkerFinder extends JFXFunctionBase{
             AutoCompletionBinding<WormGeneEntity> acb = TextFields.bindAutoCompletion(geneNameTextField, new Callback<AutoCompletionBinding.ISuggestionRequest, Collection<WormGeneEntity>>() {
                 @Override
                 public Collection<WormGeneEntity> call(AutoCompletionBinding.ISuggestionRequest param) {
+                    selectedWormGene = null;
                     data.clear();
                     String userText = param.getUserText().trim().toLowerCase();
                     List<WormGeneEntity> results = new ArrayList<>();
@@ -145,17 +150,23 @@ public class PhenotypicMarkerFinder extends JFXFunctionBase{
                             }
                         }
                     }
-                    if (!results.isEmpty()){
-                        selectedWormGene = results.get(0);
-                        Platform.runLater(()->{
-                            chromosomeComboBox.getSelectionModel().select(selectedWormGene.getChromosome());
-                            chromosomeComboBox.setDisable(true);
-                            geneticPositionTextField.setText(Tool.instance().getString(selectedWormGene.getGeneticPosition()));
-                            geneticPositionTextField.setDisable(true);
-                            rfTextField.setText("");
-                        });
-
-                    }
+//                    if (!results.isEmpty()) {
+//                        selectedWormGene = results.get(0);
+//                        Platform.runLater(() -> {
+//                            chromosomeComboBox.getSelectionModel().select(selectedWormGene.getChromosome());
+//                            chromosomeComboBox.setDisable(true);
+//                            geneticPositionTextField.setText(Tool.instance().getString(selectedWormGene.getGeneticPosition()));
+//                            geneticPositionTextField.setDisable(true);
+//                            rfTextField.setText("");
+//                        });
+//
+//                    }
+                    Platform.runLater(() -> {
+                        chromosomeComboBox.setDisable(false);
+                        chromosomeComboBox.getSelectionModel().clearSelection();
+                        geneticPositionTextField.setDisable(false);
+                        geneticPositionTextField.setText("");
+                    });
                     return results;
                 }
             }, new StringConverter<WormGeneEntity>() {
@@ -173,15 +184,15 @@ public class PhenotypicMarkerFinder extends JFXFunctionBase{
                 @Override
                 public void handle(AutoCompletionBinding.AutoCompletionEvent<WormGeneEntity> event) {
                     selectedWormGene = event.getCompletion();
-                    if (selectedWormGene != null){
+                    if (selectedWormGene != null) {
                         chromosomeComboBox.getSelectionModel().select(selectedWormGene.getChromosome());
                         chromosomeComboBox.setDisable(true);
                         geneticPositionTextField.setText(Tool.instance().getString(selectedWormGene.getGeneticPosition()));
                         geneticPositionTextField.setDisable(true);
-                        Platform.runLater(()->{
+                        Platform.runLater(() -> {
                             searchButton.fire();
                         });
-                    }else {
+                    } else {
                         chromosomeComboBox.setDisable(false);
                         chromosomeComboBox.getSelectionModel().clearSelection();
                         geneticPositionTextField.setDisable(false);
@@ -220,20 +231,20 @@ public class PhenotypicMarkerFinder extends JFXFunctionBase{
             label_col_NA = columnLabel("NA", tip_col_NA);
 
 
-            TableView tableView = new TableView<>();
-            TableColumn<PhenotypicMarkerEntity,Void> col0 = new TableColumn("Index");
+            TableView<PhenotypicMarkerEntity> tableView = new TableView<>();
+            TableColumn<PhenotypicMarkerEntity, Void> col0 = new TableColumn<>("Index");
             col0.setPrefWidth(40);
             col0.setMinWidth(40);
             col0.setSortable(false);
-            TableColumn<PhenotypicMarkerEntity,String> col1 = new TableColumn("Strain Name");
+            TableColumn<PhenotypicMarkerEntity, String> col1 = new TableColumn<>("Strain Name");
             col1.setSortable(false);
             col1.setMinWidth(150);
             col1.setSortable(false);
-            TableColumn<PhenotypicMarkerEntity,String> col2 = new TableColumn("Chr");
+            TableColumn<PhenotypicMarkerEntity, String> col2 = new TableColumn<>("Chr");
             col2.setPrefWidth(40);
             col2.setMinWidth(40);
             col2.setSortable(false);
-            TableColumn<PhenotypicMarkerEntity,String> col3 = new TableColumn("Phenotypic Marker");
+            TableColumn<PhenotypicMarkerEntity, String> col3 = new TableColumn<>("Phenotypic Marker");
             col3.setSortable(false);
             col3.setCellFactory(param -> new RTLabelCell());
             col3.setMinWidth(150);
@@ -250,30 +261,30 @@ public class PhenotypicMarkerFinder extends JFXFunctionBase{
 //        }));
 
 
-            TableColumn<PhenotypicMarkerEntity,String> col4 = new TableColumn("Genetic Position");
+            TableColumn<PhenotypicMarkerEntity, String> col4 = new TableColumn<>("Genetic Position");
             col4.setSortable(false);
             col4.setMinWidth(150);
 
-            TableColumn<PhenotypicMarkerEntity,String> col5 = new TableColumn("");
+            TableColumn<PhenotypicMarkerEntity, String> col5 = new TableColumn<>("");
             col5.setGraphic(label_col_ES);
             col5.setSortable(false);
             col5.setMinWidth(50);
             col5.setCellFactory(param -> new RTLabelCell());
 
-            TableColumn<PhenotypicMarkerEntity,String> col6 = new TableColumn("");
+            TableColumn<PhenotypicMarkerEntity, String> col6 = new TableColumn<>("");
             col6.setGraphic(label_col_ME);
             col6.setSortable(false);
             col6.setMinWidth(50);
             col6.setCellFactory(param -> new RTLabelCell());
 
-            TableColumn<PhenotypicMarkerEntity,String> col7 = new TableColumn("");
+            TableColumn<PhenotypicMarkerEntity, String> col7 = new TableColumn<>("");
             col7.setGraphic(label_col_NA);
             col7.setSortable(false);
             col7.setMinWidth(50);
             col7.setCellFactory(param -> new RTLabelCell());
 
 
-            TableColumn<PhenotypicMarkerEntity,String> col8 = new TableColumn<>("Information");
+            TableColumn<PhenotypicMarkerEntity, String> col8 = new TableColumn<>("Information");
             col8.setSortable(false);
             col8.setCellFactory(param -> new PopOverTableCell());
             col8.setMinWidth(200);
@@ -285,46 +296,56 @@ public class PhenotypicMarkerFinder extends JFXFunctionBase{
                     if (isEmpty() || index < 0) {
                         setText(null);
                     } else {
-                        setText(Integer.toString(index+1));
+                        setText(Integer.toString(index + 1));
                     }
                 }
             });
-            col1.setCellValueFactory(new PropertyValueFactory<PhenotypicMarkerEntity,String>("strainName"));
-            col2.setCellValueFactory(new PropertyValueFactory<PhenotypicMarkerEntity,String>("chromosome"));
-            col3.setCellValueFactory(new PropertyValueFactory<PhenotypicMarkerEntity,String>("geneticMarker"));
-            col4.setCellValueFactory(new PropertyValueFactory<PhenotypicMarkerEntity,String>("geneticPosition"));
-            col5.setCellValueFactory(new PropertyValueFactory<PhenotypicMarkerEntity,String>("ES"));
-            col6.setCellValueFactory(new PropertyValueFactory<PhenotypicMarkerEntity,String>("ME"));
-            col7.setCellValueFactory(new PropertyValueFactory<PhenotypicMarkerEntity,String>("NA"));
-            col8.setCellValueFactory(new PropertyValueFactory<PhenotypicMarkerEntity,String>("info"));
-            tableView.getColumns().addAll(col0,col1,col2,col3,col4,col5,col6,col7,col8);
+            col1.setCellValueFactory(new PropertyValueFactory<PhenotypicMarkerEntity, String>("strainName"));
+            col2.setCellValueFactory(new PropertyValueFactory<PhenotypicMarkerEntity, String>("chromosome"));
+            col3.setCellValueFactory(new PropertyValueFactory<PhenotypicMarkerEntity, String>("geneticMarker"));
+            col4.setCellValueFactory(new PropertyValueFactory<PhenotypicMarkerEntity, String>("geneticPosition"));
+            col5.setCellValueFactory(new PropertyValueFactory<PhenotypicMarkerEntity, String>("ES"));
+            col6.setCellValueFactory(new PropertyValueFactory<PhenotypicMarkerEntity, String>("ME"));
+            col7.setCellValueFactory(new PropertyValueFactory<PhenotypicMarkerEntity, String>("NA"));
+            col8.setCellValueFactory(new PropertyValueFactory<PhenotypicMarkerEntity, String>("info"));
+            tableView.getColumns().addAll(col0, col1, col2, col3, col4, col5, col6, col7, col8);
             tableView.setItems(data);
             tableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
                 @Override
                 public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                    if (newValue != null && selectedWormGene != null){
-                        double rf = Math.abs(selectedWormGene.getGeneticPosition() - ((PhenotypicMarkerEntity)newValue).getGeneticPosition());
-                        DecimalFormat df = new DecimalFormat("######0.00");
-                        rfTextField.setText(df.format(rf) + "");
-                    }else {
-                        rfTextField.setText("");
+                    if (newValue != null) {
+                        if (selectedWormGene != null) {
+                            double rf = Math.abs(selectedWormGene.getGeneticPosition() - ((PhenotypicMarkerEntity) newValue).getGeneticPosition());
+                            DecimalFormat df = new DecimalFormat("######0.00");
+                            rfTextField.setText(df.format(rf) + "");
+                            return;
+                        } else{
+                            if (!geneticPositionTextField.getText().isEmpty()){
+                                String inputGeneticPosition = geneticPositionTextField.getText();
+                                double rf = Math.abs(Double.parseDouble(inputGeneticPosition) - ((PhenotypicMarkerEntity) newValue).getGeneticPosition());
+                                DecimalFormat df = new DecimalFormat("######0.00");
+                                rfTextField.setText(df.format(rf) + "");
+                                return;
+                            }
+                        }
                     }
+                    rfTextField.setText("");
                 }
             });
-            AnchorPane anchorPane = new AnchorPane(searchBar,tableView);
-            AnchorPane.setTopAnchor(searchBar,0D);
-            AnchorPane.setLeftAnchor(searchBar,0D);
-            AnchorPane.setRightAnchor(searchBar,0D);
+            AnchorPane anchorPane = new AnchorPane(searchBar, tableView);
+            AnchorPane.setTopAnchor(searchBar, 0D);
+            AnchorPane.setLeftAnchor(searchBar, 0D);
+            AnchorPane.setRightAnchor(searchBar, 0D);
 
-            AnchorPane.setTopAnchor(tableView,80D);
-            AnchorPane.setLeftAnchor(tableView,0D);
-            AnchorPane.setBottomAnchor(tableView,0D);
-            AnchorPane.setRightAnchor(tableView,0D);
+            AnchorPane.setTopAnchor(tableView, 80D);
+            AnchorPane.setLeftAnchor(tableView, 0D);
+            AnchorPane.setBottomAnchor(tableView, 0D);
+            AnchorPane.setRightAnchor(tableView, 0D);
 
             HBox hBox = new HBox();
-            hBox.setBackground(new Background(new BackgroundFill(Color.rgb(0,0,0,0.5),null,null)));
+            hBox.setBackground(new Background(new BackgroundFill(Color.rgb(0, 0, 0, 0.5), null, null)));
 
-            StackPane stackPane = new StackPane(anchorPane,hBox);
+            StackPane stackPane = new StackPane(anchorPane, hBox);
             hBox.setVisible(false);
             contentNode = stackPane;
         }
@@ -332,19 +353,22 @@ public class PhenotypicMarkerFinder extends JFXFunctionBase{
 
     }
 
-    private void searchBalancers(){
-        data.clear();
-        Map<String,String> param = new HashMap<>();
+    private void searchBalancers() {
+
+        Map<String, String> param = new HashMap<>();
 //        String chromosome = getSelectedChromesome();
         String chromosome = chromosomeComboBox.getSelectionModel().getSelectedItem();
         String position = geneticPositionTextField.getText();
         String name = Tool.instance().getString(geneNameTextField.getText());
-        param.put("name",name);
-        param.put("position",position);
-        param.put("chromosome",chromosome);
+        param.put("name", name);
+        param.put("position", position);
+        param.put("chromosome", chromosome);
         List<PhenotypicMarkerEntity> results = searchBalancersService.searchBalancers(param);
-        if (results != null && results.size() > 0){
-            data.addAll(results);
+        if (results != null && results.size() > 0) {
+            Platform.runLater(() -> {
+                data.clear();
+                data.addAll(results);
+            });
         }
     }
 //    private void showPopOver(Hyperlink hyperlink){
@@ -362,7 +386,7 @@ public class PhenotypicMarkerFinder extends JFXFunctionBase{
 //        }
 //    }
 
-    private Label columnLabel(String title, Tooltip tooltip){
+    private Label columnLabel(String title, Tooltip tooltip) {
         Label label = new Label(title);
         label.setTextFill(Color.SKYBLUE);
 //        label.setUnderline(true);
@@ -410,12 +434,12 @@ public class PhenotypicMarkerFinder extends JFXFunctionBase{
 //        }
 //    }
 
-    class PopOverTableCell extends TableCell<PhenotypicMarkerEntity,String>{
+    class PopOverTableCell extends TableCell<PhenotypicMarkerEntity, String> {
         final Label label = new Label();
 
         @Override
         protected void updateItem(String item, boolean empty) {
-            if (item != null){
+            if (item != null) {
                 label.setText(item);
                 label.setWrapText(true);
 //                Tooltip tooltip = new Tooltip(item);
@@ -435,9 +459,9 @@ public class PhenotypicMarkerFinder extends JFXFunctionBase{
                         VBox vBox = new VBox(popOverLabel);
                         vBox.setPadding(new Insets(10));
 
-                        if (popOver != null){
-                            if (popOver.isShowing()){
-                                if (popOver.getOwnerNode() == label){
+                        if (popOver != null) {
+                            if (popOver.isShowing()) {
+                                if (popOver.getOwnerNode() == label) {
                                     return;
                                 }
                             }
@@ -451,36 +475,43 @@ public class PhenotypicMarkerFinder extends JFXFunctionBase{
                         popOver.show(label);
                     }
                 });
+            }else {
+                label.setText(null);
+                setText(null);
             }
             setGraphic(label);
         }
     }
 
-    class RTLabelCell extends TableCell<PhenotypicMarkerEntity,String>{
-//        private final TextFlow textFlow = new TextFlow();
+    class RTLabelCell extends TableCell<PhenotypicMarkerEntity, String> {
+        private final TextFlow textFlow = new TextFlow();
 
         private final MultipleTipLabel label = new MultipleTipLabel("");
-        public RTLabelCell(){
+
+        public RTLabelCell() {
         }
 
         @Override
         protected void updateItem(String item, boolean empty) {
-            if (item != null){
+            if (item != null) {
                 label.setTipHandler(new MultipleTipLabel.MultipleTipLabelHandler() {
                     @Override
                     public String tipForText(String text) {
                         AbbreviationEntity abbreviationEntity = AbbreviationService.findAbbreviation(text);
                         String tip = "";
-                        if (abbreviationEntity != null){
+                        if (abbreviationEntity != null) {
                             tip += abbreviationEntity.getAbbreviation();
                             tip += "(" + abbreviationEntity.getFullname() + ")";
-                        }else {
+                        } else {
                             tip += "Not found";
                         }
                         return tip;
                     }
                 });
                 label.setText(item);
+            }else {
+                label.setText(null);
+                setText(null);
             }
             setGraphic(label);
 //            textFlow.getChildren().clear();

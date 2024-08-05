@@ -11,5 +11,7 @@
     <orderEntry type="module" module-name="JFXCommon" />
     <orderEntry type="module" module-name="SQLite" />
     <orderEntry type="module" module-name="FoundationCommon" />
+    <orderEntry type="library" name="apache.commons.csv" level="project" />
+    <orderEntry type="library" name="apache.poi.ooxml" level="project" />
   </component>
 </module>

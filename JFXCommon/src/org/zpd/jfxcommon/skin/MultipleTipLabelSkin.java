@@ -1,11 +1,11 @@
 package org.zpd.jfxcommon.skin;
 
-import com.sun.javafx.scene.control.behavior.BehaviorBase;
-import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.scene.Cursor;
-import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.SkinBase;
 import javafx.scene.control.Tooltip;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -13,12 +13,11 @@ import javafx.scene.text.TextFlow;
 import org.zpd.jfxcommon.control.MultipleTipLabel;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 /**
  * Created by zhb on 16/10/5.
  */
-public class MultipleTipLabelSkin extends BehaviorSkinBase<MultipleTipLabel,BehaviorBase<MultipleTipLabel>> {
+public class MultipleTipLabelSkin extends SkinBase<MultipleTipLabel> {
 
     private static final String HYPERLINK_START = "[";
     private static final String HYPERLINK_END = "]";
@@ -26,19 +25,17 @@ public class MultipleTipLabelSkin extends BehaviorSkinBase<MultipleTipLabel,Beha
 
 
     public MultipleTipLabelSkin(MultipleTipLabel control) {
-        super(control, new BehaviorBase(control, Collections.emptyList()));
+        super(control);
         this.getChildren().add(this.textFlow);
         this.updateText();
-        this.registerChangeListener(control.textProperty(), "TEXT");
+        control.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                updateText();
+            }
+        });
     }
 
-    protected void handleControlPropertyChanged(String p) {
-        super.handleControlPropertyChanged(p);
-        if(p == "TEXT") {
-            this.updateText();
-        }
-
-    }
 
     private void updateText() {
         String text = (this.getSkinnable()).getText();
@@ -69,7 +66,6 @@ public class MultipleTipLabelSkin extends BehaviorSkinBase<MultipleTipLabel,Beha
                 nodes.add(tipLabel);
             }
 
-            this.textFlow.getChildren().setAll(nodes);
             this.textFlow.getChildren().setAll(nodes);
         } else {
             this.textFlow.getChildren().clear();
