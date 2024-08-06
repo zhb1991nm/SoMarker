@@ -6,7 +6,17 @@
 
 ## How to use
 
-### I. Launch SoMarker
+### I. Download SoMarker
+
+1. Click on the version number under Releases
+
+![pic12](doc/screenshots/pic12.png)
+
+2. Download SoMarker which is compatible with your operating system
+
+![pic13](doc/screenshots/pic13.png)
+
+### II. Launch SoMarker
 
 #### For mac users: 
 
@@ -28,7 +38,7 @@ Decompress the app from the zip folder and save to your directory of choice. You
 
 We didn’t encounter any warning message from Windows 11 when we tested the app. But if you see the warning message in other Windows OS, please follow the instructions of Windows to open the app.
 
-### II. Using SoMarker
+### III. Using SoMarker
 
 1. Select the type of marker desired.
 2. Search for marker strains by either entering in a gene name or a chromosome of interest with a specific genetic position.
@@ -37,7 +47,7 @@ We didn’t encounter any warning message from Windows 11 when we tested the app
 
 ![pic4](doc/screenshots/pic4.png)
 
-### III. Editing the gene and marker databases of SoMarker
+### IV. Editing the gene and marker databases of SoMarker
 
 We developed an Import/Export tool to simplify the process of editing the gene and marker databases. This will allow the user to add, delete or modify the information within SoMarker.
 
@@ -60,7 +70,7 @@ We developed an Import/Export tool to simplify the process of editing the gene a
 
 ![pic8](doc/screenshots/pic8.png)
 
-## IV. Adding images to SoMarker
+## V. Adding images to SoMarker
 
 To add images to SoMarker that correspond to a fluorescent marker:
 
